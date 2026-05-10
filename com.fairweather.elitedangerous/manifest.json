@@ -1,0 +1,16 @@
+{
+  "author": "Cristoffer Fairweather",
+  "id": "com.fairweather.elitedangerous",
+  "name": "Elite Dangerous HUD",
+  "description": "Real-time Elite Dangerous commander HUD. Displays system location, ship status, hull integrity, fuel, cargo, and tactical flags sourced from a local elite-dangerous-journal-server WebSocket (ws://localhost:31337). Requires the companion journal server running alongside the game.",
+  "version": "1.0.0",
+  "preview_icon": "resources/icon.svg",
+  "min_framework_version": "1.0.0",
+  "os": [
+    { "platform": "windows" }
+  ],
+  "supported_devices": [
+    { "type": "dashboard_lcd", "features": ["sensor-screen"] }
+  ],
+  "interactive": false
+}

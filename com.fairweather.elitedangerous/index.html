@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tr('Elite Dangerous HUD')</title>
+  <link rel="icon" type="image/svg+xml" href="resources/icon.svg">
+
+  <!-- Limit to Xeneon Edge only -->
+  <meta name="x-icue-restrictions" data-restrictions='[{ "device": "dashboard_lcd" }]'>
+
+  <!-- No user-configurable properties — fixed ED color scheme -->
+  <script id="x-icue-groups" type="application/json">[]</script>
+
+  <link rel="stylesheet" href="styles/elite-hud.css">
+</head>
+<body>
+<div class="widget-root">
+
+  <!-- ── Connecting / GalNet splash (full screen until first data) ───────── -->
+  <div class="overlay-screen" id="overlay-connecting">
+    <img class="galnet-icon" src="resources/icon.svg" alt="">
+    <div class="galnet-subtitle">ELITE DANGEROUS</div>
+    <div class="galnet-message" id="connecting-msg">CONNECTING TO GALNET</div>
+    <div class="galnet-bar-track">
+      <div class="galnet-bar-fill"></div>
+    </div>
+  </div>
+
+  <!-- ── Signal lost overlay (over retained data) ───────────────────────── -->
+  <div class="overlay-lost" id="overlay-lost" style="display:none">
+    <div class="lost-icon">⚠</div>
+    <div class="lost-title">GALNET SIGNAL LOST</div>
+    <div class="lost-subtitle">ATTEMPTING TO RECONNECT...</div>
+  </div>
+
+  <!-- ── Main HUD ───────────────────────────────────────────────────────── -->
+  <div id="hud-root" style="display:none">
+
+    <!-- Header bar -->
+    <div class="hud-header">
+      <div class="header-cmdr">
+        <span class="header-label">CMDR</span>
+        <span class="header-name" id="h-name">—</span>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-mode"  id="h-mode">OPEN</span>
+        <span class="badge badge-legal" id="h-legal">CLEAN</span>
+      </div>
+      <div class="header-spacer"></div>
+      <div class="header-right">
+        <span class="header-credits" id="h-credits">— CR</span>
+        <span class="header-clock"   id="h-clock">--:-- UTC</span>
+      </div>
+    </div>
+
+    <!-- Panel row -->
+    <div class="hud-panels">
+
+      <!-- ── Location ──────────────────────────────────────────────────── -->
+      <div class="panel panel-location">
+        <div class="panel-label">LOCATION</div>
+
+        <div class="loc-system" id="p-system">—</div>
+        <div class="loc-body"   id="p-body"></div>
+        <div class="loc-station" id="p-station" style="display:none"></div>
+
+        <div class="loc-flags">
+          <span class="loc-flag" id="flag-docked">DOCKED</span>
+          <span class="loc-flag" id="flag-landed">ON SURFACE</span>
+          <span class="loc-flag" id="flag-sc">SUPERCRUISE</span>
+          <span class="loc-flag" id="flag-jump">IN HYPERSPACE</span>
+          <span class="loc-flag" id="flag-intrdc">INTERDICTED</span>
+        </div>
+      </div>
+
+      <!-- ── Ship ──────────────────────────────────────────────────────── -->
+      <div class="panel panel-ship">
+        <div class="panel-label">VESSEL</div>
+
+        <div class="ship-name"  id="p-ship-name">—</div>
+        <div class="ship-type"  id="p-ship-type"></div>
+        <div class="ship-ident" id="p-ship-ident"></div>
+
+        <div class="ship-stats">
+          <div class="ship-stat">
+            <div class="ship-stat-label">MAX JUMP</div>
+            <div class="ship-stat-value" id="p-jump">—</div>
+          </div>
+          <div class="ship-stat">
+            <div class="ship-stat-label">CARGO CAP</div>
+            <div class="ship-stat-value" id="p-cargo-cap">—</div>
+          </div>
+        </div>
+
+        <div class="pips-row">
+          <span class="pip-label">SYS</span>
+          <div  class="pip-track" id="pips-sys"></div>
+          <span class="pip-label">ENG</span>
+          <div  class="pip-track" id="pips-eng"></div>
+          <span class="pip-label">WEP</span>
+          <div  class="pip-track" id="pips-wep"></div>
+        </div>
+      </div>
+
+      <!-- ── Vitals ─────────────────────────────────────────────────────── -->
+      <div class="panel panel-vitals">
+        <div class="panel-label">SHIP VITALS</div>
+
+        <!-- Hull -->
+        <div class="vital-row">
+          <span class="vital-label">HULL</span>
+          <div  class="bar-track">
+            <div class="bar-fill" id="bar-hull"></div>
+          </div>
+          <span class="vital-value" id="v-hull">100%</span>
+        </div>
+
+        <!-- Shields -->
+        <div class="vital-row">
+          <span class="vital-label">SHLD</span>
+          <div  class="bar-track">
+            <div class="bar-fill bar-shield" id="bar-shield" style="width:100%"></div>
+          </div>
+          <span class="vital-value is-shields-up" id="v-shields">▲ UP</span>
+        </div>
+
+        <!-- Fuel -->
+        <div class="vital-row">
+          <span class="vital-label">FUEL</span>
+          <div  class="bar-track">
+            <div class="bar-fill" id="bar-fuel"></div>
+          </div>
+          <span class="vital-value" id="v-fuel">— T</span>
+        </div>
+
+        <div class="vitals-cargo-label" id="v-fuel-res">— T RES</div>
+
+        <!-- Cargo -->
+        <div class="vital-row">
+          <span class="vital-label">CRGO</span>
+          <div  class="bar-track">
+            <div class="bar-fill" id="bar-cargo"></div>
+          </div>
+          <span class="vital-value" id="v-cargo">0 / 0 T</span>
+        </div>
+      </div>
+
+      <!-- ── Status flags ───────────────────────────────────────────────── -->
+      <div class="panel panel-status">
+        <div class="panel-label">TACTICAL</div>
+
+        <div class="status-flags">
+          <div class="sf" id="sf-hardpoints">
+            <span class="sf-icon">⚔</span>
+            <span class="sf-text">HARDPOINTS</span>
+          </div>
+          <div class="sf" id="sf-silent">
+            <span class="sf-icon">◉</span>
+            <span class="sf-text">SILENT RUNNING</span>
+          </div>
+          <div class="sf" id="sf-scoop">
+            <span class="sf-icon">⚡</span>
+            <span class="sf-text">FUEL SCOOPING</span>
+          </div>
+          <div class="sf" id="sf-mass">
+            <span class="sf-icon">⊕</span>
+            <span class="sf-text">MASS LOCKED</span>
+          </div>
+          <div class="sf" id="sf-charge">
+            <span class="sf-icon">◈</span>
+            <span class="sf-text">FSD CHARGING</span>
+          </div>
+          <div class="sf" id="sf-danger">
+            <span class="sf-icon">⚠</span>
+            <span class="sf-text">IN DANGER</span>
+          </div>
+          <div class="sf" id="sf-overheat">
+            <span class="sf-icon">🔥</span>
+            <span class="sf-text">OVERHEATING</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /hud-panels -->
+  </div><!-- /hud-root -->
+
+</div><!-- /widget-root -->
+
+<script src="scripts/elite-hud.js"></script>
+</body>
+</html>

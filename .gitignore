@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# WidgetBuilder Kit (re-download from Corsair — contains binary installer)
+WidgetBuilder-kit/
+*.zip
+*.exe
+
+# Preview server config is local
+.claude/
+
+# Node (if a journal server wrapper is added later)
+node_modules/
