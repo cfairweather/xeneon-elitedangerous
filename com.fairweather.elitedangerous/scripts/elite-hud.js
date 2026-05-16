@@ -369,7 +369,7 @@ function handleJournalEvent(ev, e) {
       if (e.ShipName)                state.shipName     = e.ShipName;
       if (e.ShipIdent)               state.shipIdent    = e.ShipIdent;
       if (e.MaxJumpRange)            state.maxJumpRange = e.MaxJumpRange;
-      if (e.FuelCapacity?.Main)      state.fuelCapacity = e.FuelCapacity.Main;
+      if (e.FuelCapacity && e.FuelCapacity.Main) state.fuelCapacity = e.FuelCapacity.Main;
       if (e.CargoCapacity !== undefined) state.cargoCapacity = e.CargoCapacity;
       break;
 
