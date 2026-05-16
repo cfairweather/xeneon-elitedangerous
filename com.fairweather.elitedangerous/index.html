@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>tr('Elite Dangerous HUD')</title>
   <link rel="icon" type="image/svg+xml" href="resources/icon.svg">
 
@@ -17,7 +17,7 @@
 <body>
 <div class="widget-root">
 
-  <!-- ── Connecting / GalNet splash (full screen until first data) ───────── -->
+  <!-- ── Connecting / GalNet splash ───────────────────────────────────────── -->
   <div class="overlay-screen" id="overlay-connecting">
     <img class="galnet-icon" src="resources/icon.svg" alt="">
     <div class="galnet-subtitle">ELITE DANGEROUS</div>
@@ -27,162 +27,236 @@
     </div>
   </div>
 
-  <!-- ── Signal lost overlay (over retained data) ───────────────────────── -->
+  <!-- ── Signal lost overlay ──────────────────────────────────────────────── -->
   <div class="overlay-lost" id="overlay-lost" style="display:none">
     <div class="lost-icon">⚠</div>
     <div class="lost-title">GALNET SIGNAL LOST</div>
     <div class="lost-subtitle">ATTEMPTING TO RECONNECT...</div>
   </div>
 
-  <!-- ── Main HUD ───────────────────────────────────────────────────────── -->
+  <!-- ── Main shell ───────────────────────────────────────────────────────── -->
   <div id="hud-root" style="display:none">
 
-    <!-- Header bar -->
-    <div class="hud-header">
-      <div class="header-cmdr">
-        <span class="header-label">CMDR</span>
-        <span class="header-name" id="h-name">—</span>
-      </div>
-      <div class="header-badges">
-        <span class="badge badge-mode"  id="h-mode">OPEN</span>
-        <span class="badge badge-legal" id="h-legal">CLEAN</span>
-      </div>
-      <div class="header-spacer"></div>
-      <div class="header-right">
-        <span class="header-credits" id="h-credits">— CR</span>
-        <span class="header-clock"   id="h-clock">--:-- UTC</span>
-      </div>
+    <!-- ── Tab bar ────────────────────────────────────────────────────────── -->
+    <div id="tab-bar">
+      <button class="tab-btn active" data-tab="hud">HUD</button>
+      <button class="tab-btn"        data-tab="nav">NAV</button>
+      <button class="tab-btn"        data-tab="cargo">CARGO</button>
+      <button class="tab-btn"        data-tab="missions">
+        MISSIONS
+        <span class="mission-badge" id="mission-badge" style="display:none">0</span>
+      </button>
     </div>
 
-    <!-- Panel row -->
-    <div class="hud-panels">
+    <!-- ── Tab panels ─────────────────────────────────────────────────────── -->
+    <div id="tab-panels">
 
-      <!-- ── Location ──────────────────────────────────────────────────── -->
-      <div class="panel panel-location">
-        <div class="panel-label">LOCATION</div>
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- HUD TAB                                                            -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div id="panel-hud" class="tab-panel active">
 
-        <div class="loc-system" id="p-system">—</div>
-        <div class="loc-body"   id="p-body"></div>
-        <div class="loc-station" id="p-station" style="display:none"></div>
-
-        <div class="loc-flags">
-          <span class="loc-flag" id="flag-docked">DOCKED</span>
-          <span class="loc-flag" id="flag-landed">ON SURFACE</span>
-          <span class="loc-flag" id="flag-sc">SUPERCRUISE</span>
-          <span class="loc-flag" id="flag-jump">IN HYPERSPACE</span>
-          <span class="loc-flag" id="flag-intrdc">INTERDICTED</span>
-        </div>
-      </div>
-
-      <!-- ── Ship ──────────────────────────────────────────────────────── -->
-      <div class="panel panel-ship">
-        <div class="panel-label">VESSEL</div>
-
-        <div class="ship-name"  id="p-ship-name">—</div>
-        <div class="ship-type"  id="p-ship-type"></div>
-        <div class="ship-ident" id="p-ship-ident"></div>
-
-        <div class="ship-stats">
-          <div class="ship-stat">
-            <div class="ship-stat-label">MAX JUMP</div>
-            <div class="ship-stat-value" id="p-jump">—</div>
+        <!-- Header bar -->
+        <div class="hud-header">
+          <div class="header-cmdr">
+            <span class="header-label">CMDR</span>
+            <span class="header-name" id="h-name">—</span>
           </div>
-          <div class="ship-stat">
-            <div class="ship-stat-label">CARGO CAP</div>
-            <div class="ship-stat-value" id="p-cargo-cap">—</div>
+          <div class="header-badges">
+            <span class="badge badge-mode"  id="h-mode">OPEN</span>
+            <span class="badge badge-legal" id="h-legal">CLEAN</span>
+          </div>
+          <div class="header-spacer"></div>
+          <div class="header-right">
+            <span class="header-credits" id="h-credits">— CR</span>
+            <span class="header-clock"   id="h-clock">--:-- UTC</span>
           </div>
         </div>
 
-        <div class="pips-row">
-          <span class="pip-label">SYS</span>
-          <div  class="pip-track" id="pips-sys"></div>
-          <span class="pip-label">ENG</span>
-          <div  class="pip-track" id="pips-eng"></div>
-          <span class="pip-label">WEP</span>
-          <div  class="pip-track" id="pips-wep"></div>
+        <!-- Panel row -->
+        <div class="hud-panels">
+
+          <!-- Location -->
+          <div class="panel panel-location">
+            <div class="panel-label">LOCATION</div>
+            <div class="loc-system"  id="p-system">—</div>
+            <div class="loc-body"    id="p-body"></div>
+            <div class="loc-station" id="p-station" style="display:none"></div>
+            <div class="loc-flags">
+              <span class="loc-flag" id="flag-docked">DOCKED</span>
+              <span class="loc-flag" id="flag-landed">ON SURFACE</span>
+              <span class="loc-flag" id="flag-sc">SUPERCRUISE</span>
+              <span class="loc-flag" id="flag-jump">IN HYPERSPACE</span>
+              <span class="loc-flag" id="flag-intrdc">INTERDICTED</span>
+            </div>
+          </div>
+
+          <!-- Vessel -->
+          <div class="panel panel-ship">
+            <div class="panel-label">VESSEL</div>
+            <div class="ship-name"  id="p-ship-name">—</div>
+            <div class="ship-type"  id="p-ship-type"></div>
+            <div class="ship-ident" id="p-ship-ident"></div>
+            <div class="ship-stats">
+              <div class="ship-stat">
+                <div class="ship-stat-label">MAX JUMP</div>
+                <div class="ship-stat-value" id="p-jump">—</div>
+              </div>
+              <div class="ship-stat">
+                <div class="ship-stat-label">CARGO CAP</div>
+                <div class="ship-stat-value" id="p-cargo-cap">—</div>
+              </div>
+            </div>
+            <div class="pips-row">
+              <span class="pip-label">SYS</span>
+              <div  class="pip-track" id="pips-sys"></div>
+              <span class="pip-label">ENG</span>
+              <div  class="pip-track" id="pips-eng"></div>
+              <span class="pip-label">WEP</span>
+              <div  class="pip-track" id="pips-wep"></div>
+            </div>
+          </div>
+
+          <!-- Vitals -->
+          <div class="panel panel-vitals">
+            <div class="panel-label">SHIP VITALS</div>
+
+            <div class="vital-row">
+              <span class="vital-label">HULL</span>
+              <div  class="bar-track">
+                <div class="bar-fill" id="bar-hull"></div>
+              </div>
+              <span class="vital-value" id="v-hull">100%</span>
+            </div>
+
+            <div class="vital-row">
+              <span class="vital-label">SHLD</span>
+              <div  class="bar-track">
+                <div class="bar-fill bar-shield" id="bar-shield" style="width:100%"></div>
+              </div>
+              <span class="vital-value is-shields-up" id="v-shields">▲ UP</span>
+            </div>
+
+            <div class="vital-row">
+              <span class="vital-label">FUEL</span>
+              <div  class="bar-track">
+                <div class="bar-fill" id="bar-fuel"></div>
+              </div>
+              <span class="vital-value" id="v-fuel">— T</span>
+            </div>
+
+            <div class="vitals-cargo-label" id="v-fuel-res">— T RES</div>
+
+            <div class="vital-row">
+              <span class="vital-label">CRGO</span>
+              <div  class="bar-track">
+                <div class="bar-fill" id="bar-cargo"></div>
+              </div>
+              <span class="vital-value" id="v-cargo">0 / 0 T</span>
+            </div>
+          </div>
+
+          <!-- Tactical -->
+          <div class="panel panel-status">
+            <div class="panel-label">TACTICAL</div>
+            <div class="status-flags">
+              <div class="sf" id="sf-hardpoints">
+                <span class="sf-icon">⚔</span>
+                <span class="sf-text">HARDPOINTS</span>
+              </div>
+              <div class="sf" id="sf-silent">
+                <span class="sf-icon">◉</span>
+                <span class="sf-text">SILENT RUNNING</span>
+              </div>
+              <div class="sf" id="sf-scoop">
+                <span class="sf-icon">⚡</span>
+                <span class="sf-text">FUEL SCOOPING</span>
+              </div>
+              <div class="sf" id="sf-mass">
+                <span class="sf-icon">⊕</span>
+                <span class="sf-text">MASS LOCKED</span>
+              </div>
+              <div class="sf" id="sf-charge">
+                <span class="sf-icon">◈</span>
+                <span class="sf-text">FSD CHARGING</span>
+              </div>
+              <div class="sf" id="sf-danger">
+                <span class="sf-icon">⚠</span>
+                <span class="sf-text">IN DANGER</span>
+              </div>
+              <div class="sf" id="sf-overheat">
+                <span class="sf-icon">🔥</span>
+                <span class="sf-text">OVERHEATING</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /hud-panels -->
+      </div><!-- /panel-hud -->
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- NAV TAB                                                            -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div id="panel-nav" class="tab-panel">
+
+        <!-- Left: current location + destination summary -->
+        <div class="nav-left">
+          <div class="tab-section-label">CURRENT LOCATION</div>
+          <div class="nav-system"  id="nav-system">—</div>
+          <div class="nav-body"    id="nav-body"></div>
+          <div class="nav-station" id="nav-station" style="display:none"></div>
+
+          <hr class="nav-divider">
+
+          <div class="tab-section-label">DESTINATION</div>
+          <div class="nav-destination" id="nav-dest">—</div>
+          <div class="nav-jumps-row">
+            <span class="nav-jumps-count" id="nav-jumps">—</span>
+            <span class="nav-jumps-label" id="nav-jumps-label">JUMPS</span>
+          </div>
         </div>
-      </div>
 
-      <!-- ── Vitals ─────────────────────────────────────────────────────── -->
-      <div class="panel panel-vitals">
-        <div class="panel-label">SHIP VITALS</div>
-
-        <!-- Hull -->
-        <div class="vital-row">
-          <span class="vital-label">HULL</span>
-          <div  class="bar-track">
-            <div class="bar-fill" id="bar-hull"></div>
-          </div>
-          <span class="vital-value" id="v-hull">100%</span>
+        <!-- Right: full route list -->
+        <div class="nav-right">
+          <div class="tab-section-label">PLOTTED ROUTE</div>
+          <ul class="route-list" id="nav-route-list">
+            <li class="route-empty">NO ROUTE PLOTTED</li>
+          </ul>
         </div>
 
-        <!-- Shields -->
-        <div class="vital-row">
-          <span class="vital-label">SHLD</span>
-          <div  class="bar-track">
-            <div class="bar-fill bar-shield" id="bar-shield" style="width:100%"></div>
-          </div>
-          <span class="vital-value is-shields-up" id="v-shields">▲ UP</span>
+      </div><!-- /panel-nav -->
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- CARGO TAB                                                          -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div id="panel-cargo" class="tab-panel">
+
+        <div class="list-header">
+          <span class="tab-section-label">CARGO MANIFEST</span>
+          <span class="list-summary" id="cargo-summary">0 / 0 T</span>
+        </div>
+        <div class="list-scroll" id="cargo-list">
+          <div class="list-empty">CARGO HOLD EMPTY</div>
         </div>
 
-        <!-- Fuel -->
-        <div class="vital-row">
-          <span class="vital-label">FUEL</span>
-          <div  class="bar-track">
-            <div class="bar-fill" id="bar-fuel"></div>
-          </div>
-          <span class="vital-value" id="v-fuel">— T</span>
+      </div><!-- /panel-cargo -->
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- MISSIONS TAB                                                       -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div id="panel-missions" class="tab-panel">
+
+        <div class="list-header">
+          <span class="tab-section-label">ACTIVE MISSIONS</span>
+          <span class="list-count" id="mission-count">0</span>
+        </div>
+        <div class="list-scroll" id="mission-list">
+          <div class="list-empty">NO ACTIVE MISSIONS</div>
         </div>
 
-        <div class="vitals-cargo-label" id="v-fuel-res">— T RES</div>
+      </div><!-- /panel-missions -->
 
-        <!-- Cargo -->
-        <div class="vital-row">
-          <span class="vital-label">CRGO</span>
-          <div  class="bar-track">
-            <div class="bar-fill" id="bar-cargo"></div>
-          </div>
-          <span class="vital-value" id="v-cargo">0 / 0 T</span>
-        </div>
-      </div>
-
-      <!-- ── Status flags ───────────────────────────────────────────────── -->
-      <div class="panel panel-status">
-        <div class="panel-label">TACTICAL</div>
-
-        <div class="status-flags">
-          <div class="sf" id="sf-hardpoints">
-            <span class="sf-icon">⚔</span>
-            <span class="sf-text">HARDPOINTS</span>
-          </div>
-          <div class="sf" id="sf-silent">
-            <span class="sf-icon">◉</span>
-            <span class="sf-text">SILENT RUNNING</span>
-          </div>
-          <div class="sf" id="sf-scoop">
-            <span class="sf-icon">⚡</span>
-            <span class="sf-text">FUEL SCOOPING</span>
-          </div>
-          <div class="sf" id="sf-mass">
-            <span class="sf-icon">⊕</span>
-            <span class="sf-text">MASS LOCKED</span>
-          </div>
-          <div class="sf" id="sf-charge">
-            <span class="sf-icon">◈</span>
-            <span class="sf-text">FSD CHARGING</span>
-          </div>
-          <div class="sf" id="sf-danger">
-            <span class="sf-icon">⚠</span>
-            <span class="sf-text">IN DANGER</span>
-          </div>
-          <div class="sf" id="sf-overheat">
-            <span class="sf-icon">🔥</span>
-            <span class="sf-text">OVERHEATING</span>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /hud-panels -->
+    </div><!-- /tab-panels -->
   </div><!-- /hud-root -->
 
 </div><!-- /widget-root -->

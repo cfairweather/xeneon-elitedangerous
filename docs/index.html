@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xeneon Elite Dangerous HUD — Setup Guide</title>
+  <style>
+    /* ── Palette ── */
+    :root {
+      --orange:      #f0820d;
+      --orange-b:    #ff9f30;
+      --orange-dim:  rgba(240,130,13,.55);
+      --orange-brd:  rgba(240,130,13,.22);
+      --teal:        #00c4d4;
+      --bg:          #06080a;
+      --panel:       #0b0e12;
+      --text:        #d4a96a;
+      --text-dim:    rgba(212,169,106,.6);
+      --danger:      #ff4040;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ── Layout ── */
+    .page { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 64px 0 48px;
+      border-bottom: 1px solid var(--orange-brd);
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-family: 'Consolas', monospace;
+      font-size: 11px;
+      letter-spacing: .22em;
+      color: var(--orange-dim);
+      border: 1px solid var(--orange-brd);
+      padding: 4px 10px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 700;
+      color: var(--orange-b);
+      letter-spacing: .04em;
+      text-shadow: 0 0 28px rgba(255,159,48,.28);
+      line-height: 1.15;
+    }
+
+    .hero-sub {
+      color: var(--text-dim);
+      font-size: 16px;
+      margin-top: 12px;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-links {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 9px 22px;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid var(--orange-brd);
+      color: var(--orange);
+      background: rgba(240,130,13,.07);
+      transition: background .15s, border-color .15s;
+    }
+
+    .btn:hover { background: rgba(240,130,13,.14); border-color: var(--orange-dim); }
+    .btn-primary { border-color: var(--orange-dim); color: var(--orange-b); }
+
+    /* ── Section ── */
+    section {
+      padding: 56px 0 0;
+    }
+
+    h2 {
+      font-size: 11px;
+      font-family: 'Consolas', monospace;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--orange-dim);
+      border-bottom: 1px solid var(--orange-brd);
+      padding-bottom: 8px;
+      margin-bottom: 28px;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--orange-b);
+      margin: 28px 0 10px;
+      letter-spacing: .02em;
+    }
+
+    p { color: var(--text); margin-bottom: 14px; }
+
+    a { color: var(--orange); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    strong { color: var(--orange-b); font-weight: 600; }
+
+    /* ── Steps ── */
+    .steps { counter-reset: steps; list-style: none; padding: 0; }
+
+    .steps li {
+      counter-increment: steps;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(240,130,13,.08);
+    }
+
+    .steps li:last-child { border-bottom: none; }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--orange-brd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      color: var(--orange);
+      margin-top: 2px;
+    }
+
+    .step-num::before { content: counter(steps); }
+
+    .step-body h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--orange-b);
+      margin-bottom: 4px;
+    }
+
+    .step-body p { margin-bottom: 6px; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--panel);
+      border: 1px solid var(--orange-brd);
+      padding: 16px 20px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      color: var(--orange-b);
+      overflow-x: auto;
+      margin: 12px 0 16px;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12.5px;
+      background: rgba(240,130,13,.1);
+      border: 1px solid var(--orange-brd);
+      padding: 1px 5px;
+      color: var(--orange-b);
+    }
+
+    /* ── Screenshots ── */
+    .screenshot-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .screenshot-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+
+    .screenshot-item {
+      border: 1px solid var(--orange-brd);
+      overflow: hidden;
+    }
+
+    .screenshot-item img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .screenshot-caption {
+      padding: 8px 12px;
+      font-family: 'Consolas', monospace;
+      font-size: 11px;
+      letter-spacing: .12em;
+      color: var(--orange-dim);
+      text-transform: uppercase;
+      background: var(--panel);
+      border-top: 1px solid var(--orange-brd);
+    }
+
+    /* ── Tab features ── */
+    .tab-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .tab-card {
+      background: var(--panel);
+      border: 1px solid var(--orange-brd);
+      padding: 20px;
+    }
+
+    .tab-card-label {
+      font-family: 'Consolas', monospace;
+      font-size: 10px;
+      letter-spacing: .24em;
+      color: var(--orange-dim);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .tab-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--orange-b);
+      margin-bottom: 8px;
+    }
+
+    .tab-card p { font-size: 13.5px; color: var(--text-dim); margin: 0; }
+
+    /* ── Requirements table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 16px 0;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(240,130,13,.1);
+    }
+
+    th {
+      font-family: 'Consolas', monospace;
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--orange-dim);
+      font-weight: normal;
+    }
+
+    td { color: var(--text); }
+    td:first-child { color: var(--orange); font-family: 'Consolas', monospace; }
+
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Callout ── */
+    .callout {
+      border-left: 3px solid var(--orange);
+      background: rgba(240,130,13,.06);
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .callout.info  { border-color: var(--teal); background: rgba(0,196,212,.06); }
+    .callout.warn  { border-color: var(--danger); background: rgba(255,64,64,.06); }
+
+    .callout strong { display: block; margin-bottom: 4px; }
+
+    /* ── Architecture diagram ── */
+    .arch {
+      background: var(--panel);
+      border: 1px solid var(--orange-brd);
+      padding: 24px;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 2;
+    }
+
+    .arch .hi { color: var(--orange); }
+    .arch .arrow { color: var(--orange-dim); }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 80px;
+      padding-top: 24px;
+      border-top: 1px solid var(--orange-brd);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-family: 'Consolas', monospace;
+      font-size: 11px;
+      letter-spacing: .1em;
+      color: var(--orange-dim);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .tab-grid, .screenshot-grid.cols-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="hero-badge">com.fairweather.elitedangerous</div>
+    <h1>Xeneon Elite Dangerous HUD</h1>
+    <p class="hero-sub">
+      A real-time companion widget for the Corsair Xeneon Edge 14.5" touchscreen display —
+      live ship telemetry, navigation, cargo manifest, and mission tracking, all in one tap.
+    </p>
+    <div class="hero-links">
+      <a class="btn btn-primary" href="https://github.com/cfairweather/xeneon-elitedangerous">GitHub Repo</a>
+      <a class="btn" href="#setup">Setup Guide</a>
+      <a class="btn" href="#tabs">Tab Reference</a>
+    </div>
+  </header>
+
+  <!-- ── Screenshots ───────────────────────────────────────────────────────── -->
+  <section id="screenshots">
+    <h2>Screenshots</h2>
+
+    <div class="screenshot-grid">
+      <div class="screenshot-item">
+        <img src="images/xl-hud.png" alt="HUD tab — docked, clean">
+        <div class="screenshot-caption">HUD — Docked at Jameson Memorial (full XL-H layout)</div>
+      </div>
+    </div>
+
+    <div class="screenshot-grid cols-2" style="margin-top:16px">
+      <div class="screenshot-item">
+        <img src="images/xl-combat.png" alt="HUD — combat state">
+        <div class="screenshot-caption">HUD — Combat (hull critical, shields down, WANTED)</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="images/xl-nav.png" alt="NAV tab">
+        <div class="screenshot-caption">NAV — Plotted route to Colonia</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="images/xl-cargo.png" alt="CARGO tab">
+        <div class="screenshot-caption">CARGO — Manifest with mission and stolen tags</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="images/xl-missions.png" alt="MISSIONS tab">
+        <div class="screenshot-caption">MISSIONS — Active missions with countdown timers</div>
+      </div>
+    </div>
+
+    <div class="screenshot-grid cols-2" style="margin-top:16px">
+      <div class="screenshot-item">
+        <img src="images/connecting.png" alt="Connecting overlay">
+        <div class="screenshot-caption">Connecting to GalNet — animated scan bar</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="images/signal-lost.png" alt="Signal lost overlay">
+        <div class="screenshot-caption">GalNet Signal Lost — data retained</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Tabs ──────────────────────────────────────────────────────────────── -->
+  <section id="tabs">
+    <h2>Tab Reference</h2>
+
+    <div class="tab-grid">
+      <div class="tab-card">
+        <div class="tab-card-label">Tab 1</div>
+        <h4>HUD</h4>
+        <p>At-a-glance ship telemetry: hull, shields, fuel, cargo bars, power pips, location, game mode, legal status, credits, and tactical flags (hardpoints, silent running, FSD, etc.).</p>
+      </div>
+      <div class="tab-card">
+        <div class="tab-card-label">Tab 2</div>
+        <h4>NAV</h4>
+        <p>Current location with body and station name. Plotted route with per-system star class colour-coding, jump count, and destination. Scrollable for long routes (Colonia runs, Beagle Point, etc.).</p>
+      </div>
+      <div class="tab-card">
+        <div class="tab-card-label">Tab 3</div>
+        <h4>CARGO</h4>
+        <p>Full cargo manifest sorted alphabetically. Each line shows commodity, quantity in tonnes, and tags for <strong>STOLEN</strong> and <strong>MISSION</strong> cargo. Shows current / max capacity.</p>
+      </div>
+      <div class="tab-card">
+        <div class="tab-card-label">Tab 4</div>
+        <h4>MISSIONS (#)</h4>
+        <p>All active missions with destination, credit reward, and live countdown timer to expiry. Sorted by soonest expiry first. The orange badge on the tab shows how many missions are active.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Setup ─────────────────────────────────────────────────────────────── -->
+  <section id="setup">
+    <h2>Setup Guide</h2>
+
+    <div class="callout">
+      <strong>What you need</strong>
+      Corsair Xeneon Edge (14.5" LCD, 2560×720) · iCUE 5 or later · Node.js 18+ · Windows 10/11
+    </div>
+
+    <h3>Step 1 — Get the files</h3>
+    <p>Clone or download the repository:</p>
+    <pre>git clone https://github.com/cfairweather/xeneon-elitedangerous.git</pre>
+    <p>Or download the ZIP from GitHub and extract it anywhere you like.</p>
+
+    <h3>Step 2 — Install the widget in iCUE</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Open iCUE</h4>
+          <p>Launch the Corsair iCUE application. Make sure your Xeneon Edge is connected and appears in the device list.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Open Widget Builder</h4>
+          <p>Click on the Xeneon Edge in iCUE, then select <strong>Widget Builder</strong> from the controls that appear.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Import the widget package</h4>
+          <p>Drag the <code>com.fairweather.elitedangerous/</code> folder into the Widget Builder, or use <strong>File → Import Widget</strong>. The widget appears in your library as "Elite Dangerous HUD".</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Assign to the XL-H slot</h4>
+          <p>Drag the widget onto the <strong>XL-H</strong> slot (2536×696) on your Xeneon Edge canvas. This is the full-width slot that fills the screen — all four tabs and the tactical panel are visible here.</p>
+        </div>
+      </li>
+    </ol>
+
+    <h3>Step 3 — Start the companion server</h3>
+
+    <div class="callout info">
+      <strong>Why is this needed?</strong>
+      iCUE widgets run as sandboxed web pages and cannot access the filesystem directly. The companion server is a small Node.js process that runs outside the sandbox, reads your Elite Dangerous journal files, and streams events to the widget over a local WebSocket.
+    </div>
+
+    <ol class="steps">
+      <li>
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Install Node.js (first time only)</h4>
+          <p>Download and install <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js 18 LTS or later</a> from nodejs.org. The installer adds <code>node</code> and <code>npm</code> to your PATH automatically.</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Launch the server</h4>
+          <p>Double-click <code>companion\start.bat</code> in the repository folder. The first run installs the single dependency (<code>ws</code>). Keep the window open while playing.</p>
+          <pre>companion\start.bat</pre>
+          <p>You should see:</p>
+          <pre>[server] Elite Dangerous Journal Server
+[server] ws://localhost:31337
+[server] Journal dir: C:\Users\...\Saved Games\...</pre>
+        </div>
+      </li>
+      <li>
+        <div class="step-num"></div>
+        <div class="step-body">
+          <h4>Or start manually</h4>
+          <pre>cd companion
+npm install      # first time only
+npm start</pre>
+        </div>
+      </li>
+    </ol>
+
+    <div class="callout warn">
+      <strong>Security note</strong>
+      The server binds to <code>127.0.0.1:31337</code> only — it is not reachable from other computers on your network.
+    </div>
+
+    <h3>Step 4 — Launch Elite Dangerous</h3>
+    <p>Start the game. The widget shows <strong>"Connecting to GalNet"</strong> with an animated scan bar until the companion server is running. Once the server is up and the game emits its first journal events, the HUD populates automatically.</p>
+    <p>If the connection drops mid-session, the widget shows <strong>"GalNet Signal Lost"</strong> and retains the last known data. It reconnects automatically with exponential backoff (max 30 second interval).</p>
+
+    <h3>Startup order</h3>
+    <p>Any order works — the widget will wait and reconnect. But for the smoothest start:</p>
+    <ol>
+      <li>Start <code>companion\start.bat</code></li>
+      <li>Launch iCUE (or confirm it's already running)</li>
+      <li>Launch Elite Dangerous</li>
+    </ol>
+  </section>
+
+  <!-- ── Architecture ───────────────────────────────────────────────────────── -->
+  <section id="architecture">
+    <h2>Architecture</h2>
+
+    <div class="arch">
+      <div><span class="hi">Elite Dangerous</span>  (game process)</div>
+      <div><span class="arrow">  │  writes Journal.*.log + Status.json every ~1 s</span></div>
+      <div><span class="arrow">  ▼</span></div>
+      <div><span class="hi">companion/server.js</span>  (Node.js — run separately)</div>
+      <div><span class="arrow">  │  tails files, broadcasts events</span></div>
+      <div><span class="arrow">  │  ws://127.0.0.1:31337</span></div>
+      <div><span class="arrow">  ▼</span></div>
+      <div><span class="hi">iCUE widget</span>  (Chromium sandbox — QtWebEngine)</div>
+      <div><span class="arrow">  │  WebSocket client, state machine, tab renderer</span></div>
+      <div><span class="arrow">  ▼</span></div>
+      <div><span class="hi">Corsair Xeneon Edge</span>  (14.5" touchscreen, 2560×720)</div>
+    </div>
+
+    <h3>Journal events consumed</h3>
+    <table>
+      <thead>
+        <tr><th>Event</th><th>What the widget learns</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>LoadGame</td><td>Commander name, credits, game mode, ship</td></tr>
+        <tr><td>Location</td><td>Star system, body, station</td></tr>
+        <tr><td>FSDJump</td><td>New system, fuel level, route advancement</td></tr>
+        <tr><td>NavRoute</td><td>Full plotted route (NAV tab list)</td></tr>
+        <tr><td>NavRouteClear</td><td>Clears route display</td></tr>
+        <tr><td>Docked / Undocked</td><td>Station name</td></tr>
+        <tr><td>Loadout</td><td>Ship details, max jump range, cargo capacity</td></tr>
+        <tr><td>HullDamage</td><td>Hull health</td></tr>
+        <tr><td>ShieldState</td><td>Shields up/down</td></tr>
+        <tr><td>Cargo (with Inventory)</td><td>Full cargo manifest</td></tr>
+        <tr><td>CollectCargo / EjectCargo</td><td>Cargo delta updates</td></tr>
+        <tr><td>MarketBuy / MarketSell</td><td>Cargo delta updates</td></tr>
+        <tr><td>MissionAccepted</td><td>Add mission with reward &amp; expiry</td></tr>
+        <tr><td>MissionCompleted/Failed/Abandoned</td><td>Remove mission</td></tr>
+        <tr><td>Status (NEW_STATUS_EVENT)</td><td>Flags, fuel, cargo, pips, legal state</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── Companion server ───────────────────────────────────────────────────── -->
+  <section id="server">
+    <h2>Companion Server</h2>
+    <p>
+      <code>companion/server.js</code> is ~200 lines of vanilla Node.js with a single
+      npm dependency (<code>ws</code> for WebSocket). It requires no config and has no cloud
+      or telemetry components.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Behaviour</th><th>Detail</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Journal polling</td><td>Every 500 ms — tails the latest <code>Journal.*.log</code> from byte offset; never re-reads old data</td></tr>
+        <tr><td>Status polling</td><td>Every 1000 ms — checks <code>Status.json</code> mtime before reading</td></tr>
+        <tr><td>Replay buffer</td><td>Last 300 journal events sent to each new connection so the widget rebuilds full state instantly</td></tr>
+        <tr><td>Port conflict</td><td>Exits with a clear error if port 31337 is already in use</td></tr>
+        <tr><td>Graceful shutdown</td><td>SIGINT / SIGTERM (Ctrl+C or Windows close button)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Message format</h3>
+    <p>Compatible with the <a href="https://github.com/willyb321/elite-journal-node" target="_blank" rel="noopener">elite-dangerous-journal-server</a> convention:</p>
+    <pre>{ "type": "NEW_EVENT",        "payload": { "event": "Docked", ... } }
+{ "type": "NEW_STATUS_EVENT", "payload": { "Flags": 12345, "Fuel": {...}, ... } }</pre>
+  </section>
+
+  <!-- ── Responsive layout ─────────────────────────────────────────────────── -->
+  <section id="layout">
+    <h2>Responsive Layout</h2>
+    <p>The HUD tab adapts to four slot sizes using CSS <code>aspect-ratio</code> and <code>min-height</code> media queries — no JavaScript class toggling.</p>
+    <table>
+      <thead>
+        <tr><th>Slot</th><th>Approx. size</th><th>HUD panels shown</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>XL-H</td><td>2536×696</td><td>Location, Vessel, Vitals, Tactical</td></tr>
+        <tr><td>L-H</td><td>~1800×696</td><td>Location, Vessel, Vitals (Tactical hidden)</td></tr>
+        <tr><td>M-H</td><td>~840×696</td><td>Location, Vitals (Vessel + Tactical hidden)</td></tr>
+        <tr><td>S-H</td><td>~800×400</td><td>Location, Vitals (header + labels stripped)</td></tr>
+      </tbody>
+    </table>
+    <p>The NAV, CARGO, and MISSIONS tabs are single-column scrollable layouts and work in any slot size.</p>
+  </section>
+
+  <!-- ── Regenerating screenshots ──────────────────────────────────────────── -->
+  <section id="screenshots-regen">
+    <h2>Regenerating Screenshots</h2>
+    <p>After making UI changes, regenerate the preview images with Playwright:</p>
+    <pre>pip3 install playwright
+python3 -m playwright install chromium
+
+# From the repo root — start a local server first:
+python3 -m http.server 5500 --directory com.fairweather.elitedangerous &amp;
+python3 scripts/screenshot.py</pre>
+    <p>Screenshots are written to <code>docs/images/</code>.</p>
+  </section>
+
+  <!-- ── License ────────────────────────────────────────────────────────────── -->
+  <section id="license">
+    <h2>License</h2>
+    <p>
+      This project is released under the <strong>Apache License 2.0</strong>.
+      See the <a href="https://github.com/cfairweather/xeneon-elitedangerous/blob/main/LICENSE">LICENSE</a>
+      file in the repository for the full text.
+    </p>
+    <div class="callout">
+      Elite Dangerous is a trademark of Frontier Developments plc.
+      This project is not affiliated with or endorsed by Frontier Developments.
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <span>XENEON ELITE DANGEROUS HUD · CMDR FAIRWEATHER</span>
+    <a href="https://github.com/cfairweather/xeneon-elitedangerous">github.com/cfairweather/xeneon-elitedangerous</a>
+  </footer>
+
+</div>
+</body>
+</html>
