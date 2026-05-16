@@ -2,7 +2,6 @@
 
 /* ── Constants ──────────────────────────────────────────────────────────── */
 
-const WS_URL          = 'ws://localhost:31337';
 const RECONNECT_BASE  = 3000;
 const RECONNECT_MAX   = 30000;
 
@@ -220,12 +219,18 @@ function switchTab(tabId) {
 
 /* ── WebSocket ──────────────────────────────────────────────────────────── */
 
+function getWsUrl() {
+  var port = getIcueProperty('journalPort');
+  port = (port && String(port).trim()) ? String(port).trim() : '31337';
+  return 'ws://localhost:' + port;
+}
+
 function connect() {
   state.wsStatus = 'connecting';
   renderOverlays();
 
   try {
-    const ws = new WebSocket(WS_URL);
+    const ws = new WebSocket(getWsUrl());
     state.ws = ws;
 
     ws.onopen = () => {

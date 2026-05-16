@@ -9,8 +9,17 @@
   <!-- Limit to Xeneon Edge only -->
   <meta name="x-icue-restrictions" data-restrictions='[{ "device": "dashboard_lcd" }]'>
 
-  <!-- No user-configurable properties — fixed ED color scheme -->
-  <script id="x-icue-groups" type="application/json">[]</script>
+  <!-- Journal server port (change if 31337 is already in use on your PC) -->
+  <meta name="x-icue-property" content="journalPort"
+        data-label="tr('Journal Server Port')"
+        data-type="textfield"
+        data-default="'31337'">
+
+  <script id="x-icue-groups" type="application/json">
+  [
+    { "title": "tr('Connection')", "properties": ["journalPort"] }
+  ]
+  </script>
 
   <link rel="stylesheet" href="styles/elite-hud.css">
 </head>
