@@ -48,10 +48,10 @@
 
     <!-- ── Tab bar ────────────────────────────────────────────────────────── -->
     <div id="tab-bar">
-      <button class="tab-btn active" data-tab="hud"      onclick="switchTab('hud')">HUD</button>
-      <button class="tab-btn"        data-tab="nav"      onclick="switchTab('nav')">NAV</button>
-      <button class="tab-btn"        data-tab="cargo"    onclick="switchTab('cargo')">CARGO</button>
-      <button class="tab-btn"        data-tab="missions" onclick="switchTab('missions')">
+      <button id="tab-btn-hud"      class="tab-btn active" data-tab="hud"      onclick="switchTab('hud')">HUD</button>
+      <button id="tab-btn-nav"      class="tab-btn"        data-tab="nav"      onclick="switchTab('nav')">NAV</button>
+      <button id="tab-btn-cargo"    class="tab-btn"        data-tab="cargo"    onclick="switchTab('cargo')">CARGO</button>
+      <button id="tab-btn-missions" class="tab-btn"        data-tab="missions" onclick="switchTab('missions')">
         MISSIONS
         <span class="mission-badge" id="mission-badge" style="display:none">0</span>
       </button>

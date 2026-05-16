@@ -203,18 +203,43 @@ function setClasses(id, map) {
 
 /* ── Tab switching ──────────────────────────────────────────────────────── */
 
+const TAB_IDS = ['hud', 'nav', 'cargo', 'missions'];
+
 function switchTab(tabId) {
   state.activeTab = tabId;
-  document.querySelectorAll('.tab-btn').forEach(btn =>
-    btn.classList.toggle('active', btn.dataset.tab === tabId)
-  );
-  document.querySelectorAll('.tab-panel').forEach(panel =>
-    panel.classList.toggle('active', panel.id === 'panel-' + tabId)
-  );
-  // Refresh content of newly visible tab
+
+  TAB_IDS.forEach(function(id) {
+    // Button active class
+    var btn = document.getElementById('tab-btn-' + id);
+    if (btn) btn.classList.toggle('active', id === tabId);
+
+    // Panel visibility — inline style beats any CSS specificity issue
+    var panel = document.getElementById('panel-' + id);
+    if (panel) {
+      if (id === tabId) {
+        panel.style.display = 'flex';
+        panel.style.flexDirection = (id === 'nav') ? 'row' : 'column';
+      } else {
+        panel.style.display = 'none';
+      }
+    }
+  });
+
   if (tabId === 'nav')      renderNav();
   if (tabId === 'cargo')    renderCargo();
   if (tabId === 'missions') renderMissions();
+}
+
+var tabsWired = false;
+function wireTabs() {
+  if (tabsWired) return;
+  tabsWired = true;
+  TAB_IDS.forEach(function(id) {
+    var btn = document.getElementById('tab-btn-' + id);
+    if (btn) btn.addEventListener('click', function() { switchTab(id); });
+  });
+  // Initialise panel display state explicitly via JS (not CSS)
+  switchTab('hud');
 }
 
 /* ── WebSocket ──────────────────────────────────────────────────────────── */
@@ -754,7 +779,7 @@ function getIcueProperty(name) {
   } catch (_) { return undefined; }
 }
 
-function onIcueDataUpdated()  { /* fixed theme — no user properties */ }
+function onIcueDataUpdated()  { wireTabs(); /* fixed theme — no other user properties */ }
 function onIcueInitialized()  { onIcueDataUpdated(); }
 
 // Bare assignment — intentional; required by iCUE event bridge
@@ -771,10 +796,11 @@ if (typeof iCUE_initialized !== 'undefined' && iCUE_initialized) {
 
 /* ── Boot ───────────────────────────────────────────────────────────────── */
 
-// Expose switchTab on window so inline onclick handlers can reach it from
-// any execution context (iCUE runs scripts inside new Function() scope).
+// Expose on window for inline onclick — iCUE may run external scripts in
+// a new Function() scope where function declarations are not on window.
 window.switchTab = switchTab;
 
+wireTabs();    // also wire immediately for browser preview
 renderOverlays();
 connect();
 tickClock();
