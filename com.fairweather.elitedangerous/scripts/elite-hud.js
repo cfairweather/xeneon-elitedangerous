@@ -510,6 +510,7 @@ function renderOverlays() {
 /* ── HUD tab rendering ──────────────────────────────────────────────────── */
 
 function renderHUD() {
+  renderOverlays(); // sync overlay state whenever data changes
   if (!state.hadData) return;
 
   /* Header */
@@ -770,10 +771,9 @@ if (typeof iCUE_initialized !== 'undefined' && iCUE_initialized) {
 
 /* ── Boot ───────────────────────────────────────────────────────────────── */
 
-// Wire up tab buttons
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
+// Expose switchTab on window so inline onclick handlers can reach it from
+// any execution context (iCUE runs scripts inside new Function() scope).
+window.switchTab = switchTab;
 
 renderOverlays();
 connect();
