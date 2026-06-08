@@ -28,10 +28,11 @@ const JOURNAL_DIR  = path.join(
   os.homedir(),
   'Saved Games', 'Frontier Developments', 'Elite Dangerous'
 );
-const STATUS_FILE  = path.join(JOURNAL_DIR, 'Status.json');
-const POLL_JOURNAL = 500;   // ms between journal tail polls
-const POLL_STATUS  = 1000;  // ms between Status.json polls
-const REPLAY_MAX   = 300;   // recent events replayed to each new connection
+const STATUS_FILE   = path.join(JOURNAL_DIR, 'Status.json');
+const NAVROUTE_FILE = path.join(JOURNAL_DIR, 'NavRoute.json');
+const POLL_JOURNAL  = 500;   // ms between journal tail polls
+const POLL_STATUS   = 1000;  // ms between Status.json polls
+const REPLAY_MAX    = 300;   // recent events replayed to each new connection
 
 /* ── Server setup ───────────────────────────────────────────────────────── */
 
@@ -144,6 +145,25 @@ function tickStatus() {
   } catch { /* game not running or file locked */ }
 }
 
+/* ── NavRoute.json polling ───────────────────────────────────────────────── */
+
+let lastNavRouteMtime = 0;
+let lastNavRoute      = null;
+
+function tickNavRoute() {
+  try {
+    const stat = fs.statSync(NAVROUTE_FILE);
+    if (stat.mtimeMs === lastNavRouteMtime) return;
+    lastNavRouteMtime = stat.mtimeMs;
+    const raw = fs.readFileSync(NAVROUTE_FILE, 'utf8').trim();
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    lastNavRoute = parsed;
+    // Emit as a journal NavRoute event so the widget's existing handler picks it up
+    broadcast('NEW_EVENT', { event: 'NavRoute', Route: parsed.Route || [] });
+  } catch { /* file absent or game not running */ }
+}
+
 /* ── WebSocket connections ──────────────────────────────────────────────── */
 
 wss.on('connection', ws => {
@@ -160,6 +180,14 @@ wss.on('connection', ws => {
   // Push current status immediately
   if (lastStatus && ws.readyState === WS.WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'NEW_STATUS_EVENT', payload: lastStatus }));
+  }
+
+  // Push current nav route so the widget never starts with a stale/empty route
+  if (lastNavRoute && ws.readyState === WS.WebSocket.OPEN) {
+    ws.send(JSON.stringify({
+      type: 'NEW_EVENT',
+      payload: { event: 'NavRoute', Route: lastNavRoute.Route || [] },
+    }));
   }
 
   ws.on('close', () => {
@@ -193,8 +221,10 @@ httpServer.listen(PORT, '127.0.0.1', () => {
   // Start polling loops
   tickJournal();
   tickStatus();
-  setInterval(tickJournal, POLL_JOURNAL);
-  setInterval(tickStatus,  POLL_STATUS);
+  tickNavRoute();
+  setInterval(tickJournal,  POLL_JOURNAL);
+  setInterval(tickStatus,   POLL_STATUS);
+  setInterval(tickNavRoute, POLL_STATUS);
 });
 
 process.on('SIGINT',  () => { console.log('\n[server] Shutting down.'); process.exit(0); });
