@@ -102,9 +102,6 @@ const state = {
 
   // Missions — [{id, name, targetSystem, targetStation, reward, expiry}]
   missions: [],
-
-  // Active tab
-  activeTab: 'hud',
 };
 
 /* ── Helpers ────────────────────────────────────────────────────────────── */
@@ -172,7 +169,6 @@ function manifestAdd(type, localised, count, stolen, missionId) {
 function manifestRemove(type, count, stolen, missionId) {
   const key = (type || '').toLowerCase();
   const mid = missionId || null;
-  // Prefer an exact match on missionId, fall back to first key match
   let idx = state.manifest.findIndex(i => i.key === key && i.missionId === mid);
   if (idx < 0) idx = state.manifest.findIndex(i => i.key === key);
   if (idx >= 0) {
@@ -199,47 +195,6 @@ function setClasses(id, map) {
   for (const [cls, on] of Object.entries(map)) {
     e.classList.toggle(cls, !!on);
   }
-}
-
-/* ── Tab switching ──────────────────────────────────────────────────────── */
-
-const TAB_IDS = ['hud', 'nav', 'cargo', 'missions'];
-
-function switchTab(tabId) {
-  state.activeTab = tabId;
-
-  TAB_IDS.forEach(function(id) {
-    // Button active class
-    var btn = document.getElementById('tab-btn-' + id);
-    if (btn) btn.classList.toggle('active', id === tabId);
-
-    // Panel visibility — inline style beats any CSS specificity issue
-    var panel = document.getElementById('panel-' + id);
-    if (panel) {
-      if (id === tabId) {
-        panel.style.display = 'flex';
-        panel.style.flexDirection = (id === 'nav') ? 'row' : 'column';
-      } else {
-        panel.style.display = 'none';
-      }
-    }
-  });
-
-  if (tabId === 'nav')      renderNav();
-  if (tabId === 'cargo')    renderCargo();
-  if (tabId === 'missions') renderMissions();
-}
-
-var tabsWired = false;
-function wireTabs() {
-  if (tabsWired) return;
-  tabsWired = true;
-  TAB_IDS.forEach(function(id) {
-    var btn = document.getElementById('tab-btn-' + id);
-    if (btn) btn.addEventListener('click', function() { switchTab(id); });
-  });
-  // Initialise panel display state explicitly via JS (not CSS)
-  switchTab('hud');
 }
 
 /* ── WebSocket ──────────────────────────────────────────────────────────── */
@@ -359,13 +314,13 @@ function handleJournalEvent(ev, e) {
       if (state.route.length > 1) {
         const idx = state.route.findIndex(r => r.StarSystem === e.StarSystem);
         if (idx > 0)      state.route = state.route.slice(idx);
-        else if (idx < 0) state.route = [];  // jumped off-route
+        else if (idx < 0) state.route = [];
       }
       renderNav();
       break;
 
     case 'NavRoute':
-      state.route = (e.Route || []).slice(); // full plotted route
+      state.route = (e.Route || []).slice();
       renderNav();
       break;
 
@@ -488,7 +443,6 @@ function handleJournalEvent(ev, e) {
       break;
 
     case 'MissionCompleted':
-      // Mission cargo is removed by the game and a Cargo event follows
       state.missions = state.missions.filter(m => m.id !== e.MissionID);
       renderMissions();
       break;
@@ -532,10 +486,10 @@ function renderOverlays() {
   }
 }
 
-/* ── HUD tab rendering ──────────────────────────────────────────────────── */
+/* ── HUD rendering ──────────────────────────────────────────────────────── */
 
 function renderHUD() {
-  renderOverlays(); // sync overlay state whenever data changes
+  renderOverlays();
   if (!state.hadData) return;
 
   /* Header */
@@ -557,10 +511,10 @@ function renderHUD() {
   show('p-station', stationVisible);
   if (stationVisible) setText('p-station', state.station);
 
-  const docked     = hasFlag(FLAG.DOCKED) || !!state.station;
-  const landed     = hasFlag(FLAG.LANDED);
-  const sc         = hasFlag(FLAG.SUPERCRUISE);
-  const fsdJump    = hasFlag(FLAG.FSD_JUMP);
+  const docked      = hasFlag(FLAG.DOCKED) || !!state.station;
+  const landed      = hasFlag(FLAG.LANDED);
+  const sc          = hasFlag(FLAG.SUPERCRUISE);
+  const fsdJump     = hasFlag(FLAG.FSD_JUMP);
   const interdicted = hasFlag(FLAG.INTERDICTED);
 
   setClasses('flag-docked', { active: docked && !landed && !fsdJump });
@@ -577,10 +531,8 @@ function renderHUD() {
   setText('p-jump',       state.maxJumpRange ? state.maxJumpRange.toFixed(2) + ' LY' : '—');
   setText('p-cargo-cap',  state.cargoCapacity > 0 ? state.cargoCapacity + ' T' : '—');
 
-  renderPips();
-
   /* Hull */
-  const hullPct   = Math.round((state.hullHealth || 0) * 100);
+  const hullPct = Math.round((state.hullHealth || 0) * 100);
   setBar('bar-hull', hullPct);
   setText('v-hull', hullPct + '%');
   setClasses('bar-hull', { 'bar-danger': hullPct <= 25, 'bar-warning': hullPct > 25 && hullPct <= 60 });
@@ -608,87 +560,42 @@ function renderHUD() {
   setBar('bar-cargo', cargoPct);
   setText('v-cargo', state.cargoUsed + ' / ' + state.cargoCapacity + ' T');
 
-  /* Tactical flags */
-  const interdictedNow = hasFlag(FLAG.INTERDICTED);
+  /* Tactical flag pills */
+  const inDanger = hasFlag(FLAG.IN_DANGER) || interdicted;
   setClasses('sf-hardpoints', { active: hasFlag(FLAG.HARDPOINTS) });
   setClasses('sf-silent',     { active: hasFlag(FLAG.SILENT_RUN) });
   setClasses('sf-scoop',      { active: hasFlag(FLAG.SCOOPING) });
   setClasses('sf-mass',       { active: hasFlag(FLAG.MASS_LOCKED) });
   setClasses('sf-charge',     { active: hasFlag(FLAG.FSD_CHARGING) });
-  const inDanger = hasFlag(FLAG.IN_DANGER) || interdictedNow;
-  setClasses('sf-danger',   { active: inDanger,              'active-danger': inDanger });
-  setClasses('sf-overheat', { active: hasFlag(FLAG.OVERHEATING), 'active-danger': hasFlag(FLAG.OVERHEATING) });
+  setClasses('sf-danger',     { active: inDanger,               'active-danger': inDanger });
+  setClasses('sf-overheat',   { active: hasFlag(FLAG.OVERHEATING), 'active-danger': hasFlag(FLAG.OVERHEATING) });
 }
 
-function renderPips() {
-  ['sys', 'eng', 'wep'].forEach((type, i) => {
-    const track = $('pips-' + type);
-    if (!track) return;
-    const halfPips = state.pips[i] || 0;
-    track.innerHTML = '';
-    for (let seg = 0; seg < 4; seg++) {
-      const dot = document.createElement('div');
-      dot.className = 'pip-dot';
-      const fullCount = Math.floor(halfPips / 2);
-      const isHalf    = (halfPips % 2 === 1) && (seg === fullCount);
-      if (seg < fullCount) dot.classList.add('pip-full');
-      else if (isHalf)     dot.classList.add('pip-half');
-      track.appendChild(dot);
-    }
-  });
-}
-
-/* ── NAV tab rendering ──────────────────────────────────────────────────── */
+/* ── NAV column rendering ───────────────────────────────────────────────── */
 
 function renderNav() {
-  if (state.activeTab !== 'nav' && !state.hadData) return;
+  if (!state.hadData) return;
 
-  setText('nav-system',  state.starSystem || '—');
-  setText('nav-body',    state.body       || '');
-  const navStn = $('nav-station');
-  if (navStn) {
-    navStn.textContent  = state.station || '';
-    navStn.style.display = state.station ? '' : 'none';
-  }
-
-  const route      = state.route;
-  const routeList  = $('nav-route-list');
-  const destEl     = $('nav-dest');
-  const jumpsEl    = $('nav-jumps');
-  const jumpLbl    = $('nav-jumps-label');
-
+  const route    = state.route;
   const hasRoute = route && route.length > 1;
 
-  if (jumpsEl)  jumpsEl.textContent  = hasRoute ? (route.length - 1) : '—';
-  if (jumpLbl)  jumpLbl.textContent  = hasRoute && route.length - 1 === 1 ? 'JUMP' : 'JUMPS';
+  const destEl   = $('nav-dest');
+  const nextEl   = $('nav-next');
+  const jumpsEl  = $('nav-jumps');
+  const jumpLbl  = $('nav-jumps-label');
+
+  const jumpsRemaining = hasRoute ? route.length - 1 : 0;
+
+  if (jumpsEl)  jumpsEl.textContent  = hasRoute ? jumpsRemaining : '—';
+  if (jumpLbl)  jumpLbl.textContent  = jumpsRemaining === 1 ? 'JUMP' : 'JUMPS';
   if (destEl)   destEl.textContent   = hasRoute ? route[route.length - 1].StarSystem : '—';
 
-  if (!routeList) return;
-
-  if (!hasRoute) {
-    routeList.innerHTML = '<li class="route-empty">NO ROUTE PLOTTED</li>';
-    return;
-  }
-
-  routeList.innerHTML = route.map((sys, i) => {
-    const isCurrent = i === 0;
-    const isDest    = i === route.length - 1;
-    const starBadge = sys.StarClass
-      ? `<span class="route-star route-star-${sys.StarClass}">${sys.StarClass}</span>`
-      : '';
-    const tag = isCurrent
-      ? '<span class="route-tag route-tag-here">HERE</span>'
-      : isDest
-        ? '<span class="route-tag route-tag-dest">DEST</span>'
-        : '';
-    return `<li class="route-item${isCurrent ? ' route-current' : isDest ? ' route-dest' : ''}">` +
-           `<span class="route-num">${isCurrent ? '●' : i}</span>` +
-           `<span class="route-sys">${sys.StarSystem}</span>` +
-           `${starBadge}${tag}</li>`;
-  }).join('');
+  // Next jump: route[1] if more than one jump remains, otherwise same as destination
+  const nextSys = hasRoute && route.length > 2 ? route[1].StarSystem : null;
+  if (nextEl)   nextEl.textContent   = nextSys || (hasRoute ? route[route.length - 1].StarSystem : '—');
 }
 
-/* ── CARGO tab rendering ────────────────────────────────────────────────── */
+/* ── CARGO column rendering ─────────────────────────────────────────────── */
 
 function renderCargo() {
   const summaryEl = $('cargo-summary');
@@ -706,7 +613,7 @@ function renderCargo() {
   const sorted = [...items].sort((a, b) => a.name.localeCompare(b.name));
   listEl.innerHTML = sorted.map(item => {
     const tags = [];
-    if (item.stolen)   tags.push('<span class="item-tag tag-stolen">STOLEN</span>');
+    if (item.stolen)    tags.push('<span class="item-tag tag-stolen">STOLEN</span>');
     if (item.missionId) tags.push('<span class="item-tag tag-mission">MISSION</span>');
     return `<div class="cargo-item">` +
            `<span class="cargo-name">${item.name}</span>` +
@@ -716,17 +623,11 @@ function renderCargo() {
   }).join('');
 }
 
-/* ── MISSIONS tab rendering ─────────────────────────────────────────────── */
+/* ── MISSIONS column rendering ──────────────────────────────────────────── */
 
 function renderMissions() {
   const count   = state.missions.length;
-  const badge   = $('mission-badge');
   const countEl = $('mission-count');
-
-  if (badge) {
-    badge.textContent  = count || '';
-    badge.style.display = count > 0 ? 'inline-flex' : 'none';
-  }
   if (countEl) countEl.textContent = count;
 
   const listEl = $('mission-list');
@@ -737,7 +638,6 @@ function renderMissions() {
     return;
   }
 
-  // Sort: soonest expiry first
   const sorted = [...state.missions].sort((a, b) => {
     if (!a.expiry) return 1;
     if (!b.expiry) return -1;
@@ -745,17 +645,13 @@ function renderMissions() {
   });
 
   listEl.innerHTML = sorted.map(m => {
-    const timeStr  = formatTimeRemaining(m.expiry);
-    const expired  = timeStr === 'EXPIRED';
-    const rewardStr = m.reward ? formatCredits(m.reward) : '';
-    const dest = [m.targetSystem, m.targetStation].filter(Boolean).join(' · ');
-    return `<div class="mission-card${expired ? ' mission-expired' : ''}">` +
-           `<div class="mission-name">${m.name}</div>` +
-           (dest ? `<div class="mission-dest">◆ ${dest}</div>` : '') +
-           `<div class="mission-footer">` +
-           (rewardStr ? `<span class="mission-reward">${rewardStr}</span>` : '') +
-           (timeStr   ? `<span class="mission-time${expired ? ' expired' : ''}">⏱ ${timeStr}</span>` : '') +
-           `</div></div>`;
+    const timeStr = formatTimeRemaining(m.expiry);
+    const expired = timeStr === 'EXPIRED';
+    return `<div class="mission-row${expired ? ' mission-expired' : ''}">` +
+           `<span class="mission-row-name">${m.name}</span>` +
+           (timeStr ? `<span class="mission-row-time${expired ? ' expired' : ''}">` +
+             `${expired ? 'EXPIRED' : timeStr}</span>` : '') +
+           `</div>`;
   }).join('');
 }
 
@@ -764,7 +660,7 @@ function renderMissions() {
 function tickClock() { setText('h-clock', utcTime()); }
 
 function tickMissions() {
-  if (state.activeTab === 'missions' && state.missions.length > 0) renderMissions();
+  if (state.missions.length > 0) renderMissions();
 }
 
 /* ── iCUE integration ───────────────────────────────────────────────────── */
@@ -779,7 +675,7 @@ function getIcueProperty(name) {
   } catch (_) { return undefined; }
 }
 
-function onIcueDataUpdated()  { wireTabs(); /* fixed theme — no other user properties */ }
+function onIcueDataUpdated()  { /* no user-configurable properties beyond journalPort */ }
 function onIcueInitialized()  { onIcueDataUpdated(); }
 
 // Bare assignment — intentional; required by iCUE event bridge
@@ -796,13 +692,8 @@ if (typeof iCUE_initialized !== 'undefined' && iCUE_initialized) {
 
 /* ── Boot ───────────────────────────────────────────────────────────────── */
 
-// Expose on window for inline onclick — iCUE may run external scripts in
-// a new Function() scope where function declarations are not on window.
-window.switchTab = switchTab;
-
-wireTabs();    // also wire immediately for browser preview
 renderOverlays();
 connect();
 tickClock();
 setInterval(tickClock,    1000);
-setInterval(tickMissions, 10000);  // refresh mission countdowns
+setInterval(tickMissions, 10000);
